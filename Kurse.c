@@ -23,6 +23,7 @@ void handlePress(char *text, int* currTextSize, char ch){
 	}	
 }
 void displayOnScr(char* text, int currTextSize){
+	static int scrollIndex; 
 	int scrY, scrX,scrHeight, scrWidth;
 	getyx(stdscr, scrY, scrX);
 	getmaxyx(stdscr, scrHeight, scrWidth);
@@ -30,8 +31,8 @@ void displayOnScr(char* text, int currTextSize){
 	if(prevScr.scrHeight == scrHeight && prevScr.scrWidth == scrWidth){
 			if(isChBackSpace){
 				if(scrX == 0){
-					int newY = 0, newX=0;
-					int iter = 0;
+					int newY = 0, newX=0, iter = 0, secondLastEnter = 0;
+					
 					for(; iter < currTextSize; iter++){ 
 						if(text[iter] == '\n' || newX+1 == scrWidth ){
 							newY++;
@@ -41,6 +42,8 @@ void displayOnScr(char* text, int currTextSize){
 							newX++;
 						}
 					}
+	//					if(scrY == 0 && scrollIndex > 0){
+						
 					move(newY, newX);
 				}else{
 					move(scrY, scrX-1);
@@ -49,7 +52,22 @@ void displayOnScr(char* text, int currTextSize){
 				isChBackSpace = 0;
 				refresh();
 			}else{
-				i = currTextSize-1;
+				//code for scrolling
+				if((scrY == scrHeight-1  && scrX == scrWidth-1) || (scrY == scrHeight-1 && text[currTextSize-1] == '\n')){
+					clear();
+					//find first \n
+					int l;
+					for( l =scrollIndex;l < currTextSize; l++){
+						if(text[l] == '\n'){
+							break;
+						}
+					}
+					i = scrollIndex = l+1;	
+					scrX = scrY = 0;
+					move(0,0);
+				}else{
+					i = currTextSize-1;
+				}
 			}
 	}else{
 		i  = 0;
