@@ -3,6 +3,10 @@
 #include <signal.h> 
 #include <stdlib.h>
 int vimMode = 0;
+int vimMotionCh;
+int vimmedScrX=0, vimmedScrY=0;
+
+
 struct prevScrSize{
 	int scrHeight;
 	int scrWidth;
@@ -22,6 +26,46 @@ void handlePress(char *text, int* currTextSize, char ch){
 		(*currTextSize)++;
 	}	
 }
+void scrollUp(char* text, int* scrollIndex, int* i){
+	for(int k = *scrollIndex - 2; k >= 0; k--){
+		if(text[k] == '\n'){
+			*i = *scrollIndex = k+1;
+			break;
+		}
+		*i = *scrollIndex = 0;
+	}
+	clear();
+	move(0,0);
+}
+void scrollDown(char* text, int* scrollIndex, int* currTextSize, int* i, int* scrY,  int* scrX){
+	clear();
+	//find first \n
+	int l;
+	for( l =*scrollIndex;l < *currTextSize; l++){
+		if(text[l] == '\n'){
+			break;
+		}
+	}
+	*i = *scrollIndex = l+1;	
+	*scrX = *scrY = 0;
+}
+					
+void moveUpAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
+	int newY = 0, newX=0, iter =scrollIndex;
+	getyx(stdscr, vimmedScrY, vimmedScrX);
+	for(; iter < currTextSize && newY < vimmedScrY; iter++){ 
+		if(text[iter] == '\n' || newX+1 == scrWidth ){
+			newY++;
+			newX=0;
+		}
+		else{
+	 		newX++;
+		}
+	}
+						
+	move(newY, newX);
+}
+	
 void displayOnScr(char* text, int currTextSize){
 	static int scrollIndex; 
 	int scrY, scrX,scrHeight, scrWidth;
@@ -29,57 +73,47 @@ void displayOnScr(char* text, int currTextSize){
 	getmaxyx(stdscr, scrHeight, scrWidth);
 	int i; 
 	if(prevScr.scrHeight == scrHeight && prevScr.scrWidth == scrWidth){
-			if(isChBackSpace){
-				if(scrX == 0 && scrY == 0 && scrollIndex > 0){
-					for(int k = scrollIndex - 2; k >= 0; k--){
-							if(text[k] == '\n'){
-								i = scrollIndex = k+1;
-								break;
-							}
-							i = scrollIndex = 0;
+		if(!vimMode){
+				if(isChBackSpace){
+					if(scrX == 0 && scrY == 0 && scrollIndex > 0){
+						scrollUp(text, &scrollIndex, &i);
+					}else if(scrX == 0){
+						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
+					}else{
+						move(scrY, scrX-1);
 					}
-					clear();
-					move(0,0);
-				}
-				else if(scrX == 0){
-					int newY = 0, newX=0, iter =scrollIndex, secondLastEnter = 0;
-					
-					for(; iter < currTextSize; iter++){ 
-						if(text[iter] == '\n' || newX+1 == scrWidth ){
-							newY++;
-							newX=0;
-						}
-						else{
-							newX++;
-						}
-					}
-	//					if(scrY == 0 && scrollIndex > 0){
-						
-					move(newY, newX);
+					delch();
+					isChBackSpace = 0;
+					refresh();
 				}else{
-					move(scrY, scrX-1);
-				}
-				delch();
-				isChBackSpace = 0;
-				refresh();
-			}else{
-				//code for scrolling
-				if((scrY == scrHeight-1  && scrX == scrWidth-1) || (scrY == scrHeight-1 && text[currTextSize-1] == '\n')){
-					clear();
-					//find first \n
-					int l;
-					for( l =scrollIndex;l < currTextSize; l++){
-						if(text[l] == '\n'){
-							break;
-						}
+					//code for scrolling
+					if((scrY == scrHeight-1  && scrX == scrWidth-1) || (scrY == scrHeight-1 && text[currTextSize-1] == '\n')){
+						scrollDown(text,&scrollIndex, &currTextSize, &i, &scrY,  &scrX); 
+					}else{
+						i = currTextSize-1;
 					}
-					i = scrollIndex = l+1;	
-					scrX = scrY = 0;
-					move(0,0);
-				}else{
-					i = currTextSize-1;
 				}
+		}
+		else{
+			switch(vimMotionCh){
+				case 'j':
+					if(scrY == scrHeight-1){	
+						scrollDown(text,&scrollIndex, &currTextSize, &i, &scrY,  &scrX); 
+					}else{
+						move(scrY+1, scrX);
+					}
+					break;	
+				case 'k':	
+					if(scrY == 0){
+						scrollUp(text, &scrollIndex, &i);
+					}else{
+						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
+						refresh();
+					}
+					break;
 			}
+		}
+			
 	}else{
 		i  = 0;
 		prevScr.scrHeight = scrHeight;
@@ -160,7 +194,8 @@ int main(){
 			handlePress(text,&currTextSize, ch); 
 			displayOnScr(text, currTextSize);
 		}else{
-			//moveVim(ch);
+			vimMotionCh = ch;
+			displayOnScr(text, currTextSize);
 			refresh();
 		}
 			
