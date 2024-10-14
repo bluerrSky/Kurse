@@ -30,8 +30,19 @@ void displayOnScr(char* text, int currTextSize){
 	int i; 
 	if(prevScr.scrHeight == scrHeight && prevScr.scrWidth == scrWidth){
 			if(isChBackSpace){
-				if(scrX == 0){
-					int newY = 0, newX=0, iter = 0, secondLastEnter = 0;
+				if(scrX == 0 && scrY == 0 && scrollIndex > 0){
+					for(int k = scrollIndex - 2; k >= 0; k--){
+							if(text[k] == '\n'){
+								i = scrollIndex = k+1;
+								break;
+							}
+							i = scrollIndex = 0;
+					}
+					clear();
+					move(0,0);
+				}
+				else if(scrX == 0){
+					int newY = 0, newX=0, iter =scrollIndex, secondLastEnter = 0;
 					
 					for(; iter < currTextSize; iter++){ 
 						if(text[iter] == '\n' || newX+1 == scrWidth ){
