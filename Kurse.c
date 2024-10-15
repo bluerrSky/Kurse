@@ -58,6 +58,8 @@ void moveUpAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
 			if((newY+1) < vimmedScrY){
 				newY++;
 				newX=0;
+			}else{
+				break;
 			}
 		}
 		else{
@@ -109,6 +111,7 @@ void displayOnScr(char* text, int currTextSize){
 					if(scrY == 0){
 						scrollUp(text, &scrollIndex, &i);
 					}else{
+						i = currTextSize;
 						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
 						refresh();
 					}
@@ -200,7 +203,6 @@ int main(){
 		}else{
 			vimMotionCh = ch;
 			displayOnScr(text, currTextSize);
-			refresh();
 		}
 			
 	}
