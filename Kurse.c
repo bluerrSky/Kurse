@@ -27,13 +27,18 @@ void handlePress(char *text, int* currTextSize, char ch){
 	}	
 }
 void scrollUp(char* text, int* scrollIndex, int* i){
+	FILE* debug = fopen("debug.txt", "a");
+	fprintf(debug, "Value of scrollIndex: %d and i: %d", *scrollIndex, *i );
 	for(int k = *scrollIndex - 2; k >= 0; k--){
+		fprintf(debug, "value of k: %d\n", k);
 		if(text[k] == '\n'){
+			fprintf(debug, "condition is true, value of i is %d and scrollIndex is %d\n", k+1, k+1);
 			*i = *scrollIndex = k+1;
 			break;
 		}
 		*i = *scrollIndex = 0;
 	}
+	fclose(debug);
 	clear();
 	move(0,0);
 }
@@ -109,7 +114,9 @@ void displayOnScr(char* text, int currTextSize){
 					break;	
 				case 'k':	
 					if(scrY == 0){
-						scrollUp(text, &scrollIndex, &i);
+						if(scrollIndex != 0){
+							scrollUp(text, &scrollIndex, &i);
+						}
 					}else{
 						i = currTextSize;
 						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
