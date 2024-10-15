@@ -55,8 +55,10 @@ void moveUpAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
 	getyx(stdscr, vimmedScrY, vimmedScrX);
 	for(; iter < currTextSize && newY < vimmedScrY; iter++){ 
 		if(text[iter] == '\n' || newX+1 == scrWidth ){
-			newY++;
-			newX=0;
+			if((newY+1) < vimmedScrY){
+				newY++;
+				newX=0;
+			}
 		}
 		else{
 	 		newX++;
@@ -116,6 +118,8 @@ void displayOnScr(char* text, int currTextSize){
 			
 	}else{
 		i  = 0;
+
+
 		prevScr.scrHeight = scrHeight;
 		prevScr.scrWidth = scrWidth;
 		clear();
