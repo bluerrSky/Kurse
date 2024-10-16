@@ -18,7 +18,7 @@ void handlePress(char *text, int* currTextSize, char ch){
 			(*currTextSize)--;
 			isChBackSpace = 1;
 		}
-		text[*currTextSize] = '\0';
+		text[*currTextSize] = '0';
 	}else if(ch == KEY_RESIZE){
 	}	
 	else{
@@ -162,7 +162,7 @@ void displayOnScr(char* text, int currTextSize){
 
 	for(; i < currTextSize; i++){
 		//isprint to handle  the resizing character(unprintable)
-		if(i >= currTextSize) break;
+		if(i >= currTextSize  || i < 0) break;
 		if(isprint(text[i]) || text[i]  == '\n'){
 			if(text[i] == '\n'){
 				scrY++;
@@ -195,7 +195,7 @@ int main(){
 	noecho();
 	//to handle resizing defining signal
 	int textSize = LINES*COLS;
-	char* text = malloc(sizeof(char) * textSize);
+	char* text = calloc(textSize,sizeof(char));
 	char ch;	
 	int currTextSize = 0;
 	while(1){
