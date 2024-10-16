@@ -18,7 +18,7 @@ void handlePress(char *text, int* currTextSize, char ch){
 			(*currTextSize)--;
 			isChBackSpace = 1;
 		}
-		text[*currTextSize] = ' ';
+		text[*currTextSize] = '\0';
 	}else if(ch == KEY_RESIZE){
 	}	
 	else{
@@ -27,18 +27,13 @@ void handlePress(char *text, int* currTextSize, char ch){
 	}	
 }
 void scrollUp(char* text, int* scrollIndex, int* i){
-	FILE* debug = fopen("debug.txt", "a");
-	fprintf(debug, "Value of scrollIndex: %d and i: %d", *scrollIndex, *i );
 	for(int k = *scrollIndex - 2; k >= 0; k--){
-		fprintf(debug, "value of k: %d\n", k);
 		if(text[k] == '\n'){
-			fprintf(debug, "condition is true, value of i is %d and scrollIndex is %d\n", k+1, k+1);
 			*i = *scrollIndex = k+1;
 			break;
 		}
 		*i = *scrollIndex = 0;
 	}
-	fclose(debug);
 	clear();
 	move(0,0);
 }
@@ -74,6 +69,25 @@ void moveUpAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
 						
 	move(newY, newX);
 }
+void moveDownAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
+	int newY = 0, newX=0, iter =scrollIndex;
+	getyx(stdscr, vimmedScrY, vimmedScrX);
+	for(; iter < currTextSize && newY <= vimmedScrY+1; iter++){ 
+		if(text[iter] == '\n' || newX+1 == scrWidth ){
+			if((newY+1) <= vimmedScrY+1){
+				newY++;
+				newX=0;
+			}else{
+				break;
+			}
+		}
+		else{
+	 		newX++;
+		}
+	}
+	move(newY, newX);
+}
+						
 	
 void displayOnScr(char* text, int currTextSize){
 	static int scrollIndex; 
@@ -81,6 +95,7 @@ void displayOnScr(char* text, int currTextSize){
 	getyx(stdscr, scrY, scrX);
 	getmaxyx(stdscr, scrHeight, scrWidth);
 	int i; 
+	int goUp = 0;
 	if(prevScr.scrHeight == scrHeight && prevScr.scrWidth == scrWidth){
 		if(!vimMode){
 				if(isChBackSpace){
@@ -105,26 +120,35 @@ void displayOnScr(char* text, int currTextSize){
 		}
 		else{
 			switch(vimMotionCh){
+				case 'h':
+					move(scrY, scrX-1);
+					break;
+				case 'l':
+					move(scrY, scrX+1);
+					break;
 				case 'j':
 					if(scrY == scrHeight-1){	
 						scrollDown(text,&scrollIndex, &currTextSize, &i, &scrY,  &scrX); 
 					}else{
-						move(scrY+1, scrX);
+						moveDownAtEnd(text, currTextSize, scrWidth, scrollIndex);
+
 					}
 					break;	
 				case 'k':	
 					if(scrY == 0){
 						if(scrollIndex != 0){
+							scrX = 0;
 							scrollUp(text, &scrollIndex, &i);
+							goUp= 1;
 						}
 					}else{
 						i = currTextSize;
 						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
-						refresh();
 					}
 					break;
 			}
 		}
+		refresh();
 			
 	}else{
 		i  = 0;
@@ -138,6 +162,7 @@ void displayOnScr(char* text, int currTextSize){
 
 	for(; i < currTextSize; i++){
 		//isprint to handle  the resizing character(unprintable)
+		if(i >= currTextSize) break;
 		if(isprint(text[i]) || text[i]  == '\n'){
 			if(text[i] == '\n'){
 				scrY++;
@@ -154,23 +179,11 @@ void displayOnScr(char* text, int currTextSize){
 		}
 		refresh();
 	}
-}
-void  moveVim(char ch,char *text, int* currTextSize){
-	int scrY, scrX;	
-	getyx(stdscr, scrY,  scrX);	
-	switch(ch){	
-		case 'h':
-			move(scrY, scrX-1);
-			break;
-		case 'j':
-			move(scrY-1, scrX);
-			break;
-		case 'k':
-			move(scrY+1, scrX);
-			break;
-		case 'l':
-			move(scrY, scrX+1);
-			break;
+	if(goUp == 1){
+		move(1,0);
+		moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
+		goUp = 0;
+		refresh();
 	}
 }
 	
@@ -199,6 +212,7 @@ int main(){
 			textSize *= 2;
 			text = realloc(text, sizeof(char) * textSize);	
 			if(text == NULL){
+				free(text);
 				endwin();
 				printf("Could not create input text buffer\n");
 				return 1;
