@@ -16,7 +16,7 @@ void addChInArr(int *currTextSize, char ch, char* text){
 	int scrY, scrX;
 	getyx(stdscr, scrY, scrX);
 	int indexY = 0,i;
-	for(i = 0; i < *currTextSize; i++){
+	for(i = 0; i <= *currTextSize; i++){
 		if(indexY == scrY){
 			break;
 		}
@@ -24,9 +24,8 @@ void addChInArr(int *currTextSize, char ch, char* text){
 			indexY++;
 		}
 	}
-	i++;
 	int j;
-	for(j = i; j < scrX;  j++){
+	for(j = i; j <= i+scrX-1;  j++){
 		if(text[j] == '\n' && j < scrX){
 			for(int k = *currTextSize; k >= j;  k--){
 				text[k] = text[k-1];
@@ -36,6 +35,7 @@ void addChInArr(int *currTextSize, char ch, char* text){
 		}
 	}
 	for(int k = *currTextSize; k >= j;  k--){
+		if(k > 0)
 		text[k] = text[k-1];
 	}
 	text[j] = ch;
@@ -176,32 +176,14 @@ void displayOnScr(char* text, int currTextSize){
 							goUp= 1;
 						}
 					}else{
-		}
-		else{
-			i = currTextSize;
-			switch(vimMotionCh){
-				case 'h':
-					move(scrY, scrX-1);
-					break;
-				case 'l':
-					move(scrY, scrX+1);
-					break;
-				case 'j':
-					if(scrY == scrHeight-1){	
-						scrollDown(text,&scrollIndex, &currTextSize, &i, &scrY,  &scrX); 
-					}else{
-						moveDownAtEnd(text, currTextSize, scrWidth, scrollIndex);
-
+						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
 					}
-					break;	
-				case 'k':	
-					if(scrY == 0){
-						if(scrollIndex != 0){
-							scrX = 0;
-							scrollUp(text, &scrollIndex, &i);
-							goUp= 1;
-						}
-					}else{
+					break;
+			}
+		}
+		refresh();
+		
+
 	}else{
 		i  = 0;
 
