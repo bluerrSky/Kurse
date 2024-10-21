@@ -12,6 +12,36 @@ struct prevScrSize{
 	int scrWidth;
 } prevScr; 
 int isChBackSpace  = 0;
+void addChInArr(int *currTextSize, char ch, char* text){
+	int scrY, scrX;
+	getyx(stdscr, scrY, scrX);
+	int indexY = 0,i;
+	for(i = 0; i < *currTextSize; i++){
+		if(indexY == scrY){
+			break;
+		}
+		if(text[i] == '\n'){
+			indexY++;
+		}
+	}
+	i++;
+	int j;
+	for(j = i; j < scrX;  j++){
+		if(text[j] == '\n' && j < scrX){
+			for(int k = *currTextSize; k >= j;  k--){
+				text[k] = text[k-1];
+			}
+			text[j] = ' ';
+			(*currTextSize)++;
+		}
+	}
+	for(int k = *currTextSize; k >= j;  k--){
+		text[k] = text[k-1];
+	}
+	text[j] = ch;
+	(*currTextSize)++;
+
+}	
 void handlePress(char *text, int* currTextSize, char ch){ 
 	if(ch == KEY_BACKSPACE || ch == 127 || ch == 8){
 		if(*currTextSize > 0){
@@ -22,8 +52,11 @@ void handlePress(char *text, int* currTextSize, char ch){
 	}else if(ch == KEY_RESIZE){
 	}	
 	else{
+		/*
 		text[*currTextSize] = ch;
 		(*currTextSize)++;
+		*/
+		addChInArr(currTextSize, ch, text);
 	}	
 }
 void scrollUp(char* text, int* scrollIndex, int* i){
@@ -119,6 +152,7 @@ void displayOnScr(char* text, int currTextSize){
 				}
 		}
 		else{
+			i = currTextSize;
 			switch(vimMotionCh){
 				case 'h':
 					move(scrY, scrX-1);
@@ -142,14 +176,32 @@ void displayOnScr(char* text, int currTextSize){
 							goUp= 1;
 						}
 					}else{
-						i = currTextSize;
-						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
-					}
-					break;
-			}
 		}
-		refresh();
-			
+		else{
+			i = currTextSize;
+			switch(vimMotionCh){
+				case 'h':
+					move(scrY, scrX-1);
+					break;
+				case 'l':
+					move(scrY, scrX+1);
+					break;
+				case 'j':
+					if(scrY == scrHeight-1){	
+						scrollDown(text,&scrollIndex, &currTextSize, &i, &scrY,  &scrX); 
+					}else{
+						moveDownAtEnd(text, currTextSize, scrWidth, scrollIndex);
+
+					}
+					break;	
+				case 'k':	
+					if(scrY == 0){
+						if(scrollIndex != 0){
+							scrX = 0;
+							scrollUp(text, &scrollIndex, &i);
+							goUp= 1;
+						}
+					}else{
 	}else{
 		i  = 0;
 
@@ -207,6 +259,9 @@ int main(){
 				break;
 			}
 		}
+		if(ch == 'i' && vimMode == 1){
+			vimMode = 0;
+		}
 			
 		if(currTextSize == textSize -1){
 			textSize *= 2;
@@ -230,5 +285,3 @@ int main(){
 	endwin();	
 	return 0;	
 }
-
-
