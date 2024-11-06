@@ -47,7 +47,7 @@ void addChInArr(int *currTextSize, char ch, char* text){
 }	
 void handlePress(char *text, int* currTextSize, char ch){ 
 	if(ch == KEY_BACKSPACE || ch == 127 || ch == 8){
-		if(*currTextSize > 0){
+		if(*currTextSize > 0 && globalCurrIndex > 0){
 			(*currTextSize)--;
 			globalCurrIndex--;
 			isChBackSpace = 1;
