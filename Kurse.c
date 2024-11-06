@@ -182,14 +182,8 @@ void displayOnScr(char* text, int currTextSize){
 				if(isChBackSpace){
 					if(scrX == 0 && scrY == 0 && scrollIndex > 0){
 						scrollUp(text, &scrollIndex, &i);
-					}else if(scrX == 0){
-						moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
-					}else{
-						move(scrY, scrX-1);
 					}
-					delch();
 					isChBackSpace = 0;
-					refresh();
 				}else{
 					//code for scrolling
 					if((scrY == scrHeight-1  && scrX == scrWidth-1) || (scrY == scrHeight-1 && text[currTextSize-1] == '\n')){
@@ -218,9 +212,6 @@ void displayOnScr(char* text, int currTextSize){
 					xHelperVar=0;
 					if(scrY == scrHeight-1){	
 						scrollDown(text,&scrollIndex, &currTextSize, &i, &scrY,  &scrX); 
-					}else{
-						moveDownAtEnd(text, currTextSize, scrWidth, scrollIndex);
-
 					}
 					moveLineDown(text, currTextSize);
 					break;	
