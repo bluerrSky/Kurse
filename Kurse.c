@@ -131,6 +131,7 @@ void moveLineDown(char *text, int currTextSize){
 		}
 	}	
 }
+//reduntant
 void moveUpAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
 	int newY = 0, newX=0, iter =scrollIndex;
 	getyx(stdscr, vimmedScrY, vimmedScrX);
@@ -150,6 +151,7 @@ void moveUpAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
 						
 	move(newY, newX);
 }
+//reduntant
 void moveDownAtEnd(char* text, int currTextSize, int scrWidth, int scrollIndex){
 	int newY = 0, newX=0, iter =scrollIndex;
 	getyx(stdscr, vimmedScrY, vimmedScrX);
@@ -203,7 +205,7 @@ void displayOnScr(char* text, int currTextSize){
 					//move(scrY, scrX-1);
 					break;
 				case 'l':
-					if(globalCurrIndex < currTextSize && text[globalCurrIndex+1] != '\n'){
+					if(globalCurrIndex < currTextSize && text[globalCurrIndex] != '\n'){
 						globalCurrIndex++;
 					}
 					//move(scrY, scrX+1);
@@ -221,11 +223,9 @@ void displayOnScr(char* text, int currTextSize){
 						if(scrollIndex != 0){
 							scrX = 0;
 							scrollUp(text, &scrollIndex, &i);
-							goUp= 1;
 						}
-					}else{
-						moveLineUp(text);
 					}
+					moveLineUp(text);
 					break;
 			}
 		}
@@ -267,20 +267,15 @@ void displayOnScr(char* text, int currTextSize){
 	}
 	char* slicedStr = sliceString(text, scrollIndex, currTextSize);
 	addstr(slicedStr);
+	/*
 	FILE* debugFile = fopen("debug.txt","a");
 	fprintf(debugFile, "GlobalCurrIndex: %d\tCurrTextSize: %d\n", globalCurrIndex, currTextSize);
 	fprintf(debugFile,"Printing %s\t",text);
 	fprintf(debugFile,"moving to %d %d\n", tempCordY, tempCordX);
 	fclose(debugFile);
+	*/
 	move(tempCordY,tempCordX);
 	refresh();
-	if(goUp == 1){
-		move(1,0);
-		moveLineUp(text);
-		moveUpAtEnd(text, currTextSize, scrWidth, scrollIndex);
-		goUp = 0;
-		refresh();
-	}
 }
 
 
